@@ -1,1 +1,38 @@
 //Desafio1
+int analogPin = 0, val = 0,c = 0;
+int pulsador1 = 2, pulsador2 = 4;
+int value1 = 0, value2 = 0;
+//int *valarr = new int [];
+bool v1 = false,v2 = false;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(pulsador1,INPUT);
+  pinMode(pulsador2,INPUT);
+}
+
+void loop()
+{
+  value1 = digitalRead(pulsador1);
+  value2 = digitalRead(pulsador2);
+  //Serial.println("Prueba");
+  if(value1 == HIGH){
+  	v1 = true;
+  }
+  if(value2 == HIGH){
+  	v2 = true;
+  }
+
+  if(v1 == true & v2 == false){
+  	//valarr[c] = val;
+  	//c++;
+  }  
+  int tiempo = millis();
+  if (tiempo == 1000){
+  	Serial.println("Tiempo");
+    delay(10000);
+  }
+  val = analogRead(analogPin);
+  Serial.println(val);
+}
