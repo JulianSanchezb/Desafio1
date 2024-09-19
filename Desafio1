@@ -1,38 +1,108 @@
 //Desafio1
-int analogPin = 0, val = 0,c = 0;
+#include <Adafruit_LiquidCrystal.h>
+Adafruit_LiquidCrystal pantalla(0);
+
+int analogPin = 0, val = 0, picos = 0,fr;
+float amplitud = 0,max = 0, min = 0,maxa = 0,tf,ti,tt;
 int pulsador1 = 2, pulsador2 = 4;
 int value1 = 0, value2 = 0;
-//int *valarr = new int [];
-bool v1 = false,v2 = false;
+int *valarr = new int[3];
+bool v1 = false, v2 = false,t = false;
+bool muestreo = true;
 
-void setup()
-{
-  Serial.begin(9600);
-  pinMode(pulsador1,INPUT);
-  pinMode(pulsador2,INPUT);
+void setup() {
+    Serial.begin(9600);
+  	pantalla.begin(16, 2);
+    pinMode(pulsador1, INPUT);
+    pinMode(pulsador2, INPUT);
 }
 
-void loop()
-{
-  value1 = digitalRead(pulsador1);
-  value2 = digitalRead(pulsador2);
-  //Serial.println("Prueba");
-  if(value1 == HIGH){
-  	v1 = true;
-  }
-  if(value2 == HIGH){
-  	v2 = true;
-  }
+void loop() {
+    int temp = millis();
+    value1 = digitalRead(pulsador1);
+    value2 = digitalRead(pulsador2);
+    val = analogRead(analogPin);
 
-  if(v1 == true & v2 == false){
-  	//valarr[c] = val;
-  	//c++;
-  }  
-  int tiempo = millis();
-  if (tiempo == 1000){
-  	Serial.println("Tiempo");
-    delay(10000);
-  }
-  val = analogRead(analogPin);
-  Serial.println(val);
+    if (value1 == HIGH) {
+        v1 = true;
+    }
+    if (value2 == HIGH) {
+        v2 = true;
+    }
+    if (val > maxa){
+      maxa = val;
+    } 
+
+  
+    if (v1 == true && v2 == false) {
+      if (t == false){
+     	ti = temp;
+        t = true;
+      }
+      	
+        if (val > max) {
+            max = val;
+        }
+        if (val < min) {
+            min = val;
+        }
+
+        *valarr = *(valarr + 1);
+        *(valarr + 1) = *(valarr + 2);
+        *(valarr + 2) = val;
+        muestreo = false;
+      	if (*valarr==max and *valarr!=*(valarr+1)){
+            picos++;
+        }
+    }
+
+    if (v1 == true && v2 == true && muestreo == false) {
+        tf = temp;
+        bool cuadrada = false,senoidal = false,triangular = false;
+        v1 = false;
+        v2 = false;
+        muestreo = true;
+      	
+      	tt = (tf-ti)/1000;
+        tt= round(tt);
+        fr = picos / tt;
+
+        amplitud = ((-1 * min) + max) / 200;
+      	amplitud = round(amplitud);
+		
+      	
+        	if( *valarr==*(valarr+1)||*valarr==*(valarr+2)||*(valarr+1)==*(valarr+2)||*valarr==-(*(valarr+1))||*valarr==-(*(valarr+2))||*(valarr+1)==-(*valarr)||*(valarr+1)==*(valarr+2)||*(valarr+2)==-(*valarr)||*(valarr+2)==-(*(valarr+1))){
+                cuadrada = true;
+            }
+            if (maxa < max){
+                senoidal  = true;
+            }
+          	if(maxa == max){
+          	triangular  = true;
+          	}
+       
+      	 
+
+        if (cuadrada == true) {
+            pantalla.print("Cuadrada");
+        }
+
+        else if (senoidal == true) {
+            pantalla.print("Senoidal");
+        }
+       	else if (triangular == true) {
+            pantalla.print("Triangular");
+        }else if(cuadrada == false && senoidal == false){
+        	pantalla.print("Desconocida");
+        }
+      	pantalla.setCursor(0,1);
+        pantalla.print("A:");
+      	pantalla.setCursor(2,1);
+      	pantalla.print(amplitud);
+      	pantalla.print("V");
+      	pantalla.setCursor(8,1);
+      	pantalla.print("Fr:");
+       	pantalla.print(fr);
+      	pantalla.print("hz");
+    }
 }
